@@ -1,0 +1,92 @@
+---
+title: "p8105_hw2_al4327"
+output: github_document
+date: "2023-10-03"
+---
+
+## Problem 0 Load R package
+
+```{r,include=TRUE,message = FALSE}
+library(tidyverse)
+library(readxl)
+```
+
+## Problem 1
+
+### pols-month.csv
+
+```{r}
+pols_month= read_csv("./fivethirtyeight_datasets/pols-month.csv") |>
+
+janitor::clean_names() |>
+separate(mon, into=c("year","month","day"), sep = '-') |>
+mutate(month = month.name[as.numeric(month)],
+       president = ifelse(prez_gop == 1, "gop", "dem")) |>
+select(-prez_dem, -prez_gop, -day)
+
+pols_month
+```
+
+#### There are 822 observations and 9 variables in the dataset.
+
+### snp.csv
+```{r}
+snp= read_csv("./fivethirtyeight_datasets/snp.csv") |>
+  
+janitor::clean_names() |>
+separate(date, into = c("year","month","day"), sep = '/') |> 
+mutate(month = month.name[as.numeric(month)]) |>
+select(year, month, close)
+
+snp
+```
+
+
+## Problem 2
+
+```{r}
+mr_trash_wheel =
+  read_excel("./202309 Trash Wheel Collection Data.xlsx", 
+             sheet = "Mr. Trash Wheel",
+             range = "A2:N586") |> 
+  janitor::clean_names() |> 
+  mutate(
+    homes_powered = (weight_tons * 500)/30,
+    mr_trash_wheel = "Mr. Trash Wheel",
+    year = as.numeric(year)
+    )
+mr_trash_wheel
+```
+#### There are 584 observations and 15 variables in the dataset.
+
+```{r}
+professor_trash_wheel =
+  read_excel("./202309 Trash Wheel Collection Data.xlsx", 
+             sheet = "Professor Trash Wheel",
+             range = "A2:M108") |> 
+  janitor::clean_names() |> 
+  mutate(homes_powered = (weight_tons * 500)/30,
+          mr_trash_wheel = "Professor Trash Wheel"
+        )
+professor_trash_wheel
+```
+#### There are 106 observations and 14 variables in the dataset.
+
+```{r}
+gwynnda = read_excel("./202309 Trash Wheel Collection Data.xlsx", 
+             sheet = "Gwynnda Trash Wheel",
+             range = "A2:L157") |> 
+  janitor::clean_names() |> 
+  mutate(homes_powered = (weight_tons * 500)/30,
+          mr_trash_wheel = "Gwynnda Trash Wheel"
+        )
+gwynnda
+```
+#### There are 155 observations and 13 variables in the dataset.
+
+### Combine the data
+```{r}
+combine_data = bind_rows(mr_trash_wheel, professor_trash_wheel, gwynnda)
+combine_data
+```
+#### There are 845 observations and 15 variables in the dataset.
