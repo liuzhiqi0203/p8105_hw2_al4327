@@ -13,7 +13,7 @@ library(readxl)
 
 ## Problem 1
 
-### pols-month.csv
+### clean the data in pols-month.csv
 
 ```{r}
 pols_month= read_csv("./fivethirtyeight_datasets/pols-month.csv") |>
@@ -27,9 +27,8 @@ select(-prez_dem, -prez_gop, -day)
 pols_month
 ```
 
-#### There are 822 observations and 9 variables in the dataset.
 
-### snp.csv
+### clean the data in snp.csv
 ```{r}
 snp= read_csv("./fivethirtyeight_datasets/snp.csv") |>
   
@@ -41,6 +40,44 @@ select(year, month, close)
 snp
 ```
 
+### tidy the unemployment data
+
+```{r}
+unemployment= read_csv("./fivethirtyeight_datasets/unemployment.csv") |>
+  janitor::clean_names() |>
+  pivot_longer(jan:dec,
+    names_to = "month", 
+    values_to = "unemployment_percent") |>
+  mutate(year = as.character(year),
+         month = recode(month,
+                        jan = "January",
+                        feb = "February",
+                        mar = "March",
+                        apr = "April",
+                        may = "May",
+                        jun = "June",
+                        jul = "July",
+                        aug = "August",
+                        sep = "September",
+                        oct = "October",
+                        nov = "November",
+                        dec = "December"
+                        )
+         )
+unemployment
+```
+### Merge Datasets
+```{r}
+Merge = 
+  left_join(pols_month, snp) |>
+  left_join(unemployment)
+Merge
+```
+
+### pols_month has 822 observations and 9 variabes. The year variable in this dataset ranges from 1947 to 2015.
+### snp has 787 observations and 3 vsriables, which are year, month, and close. The year variable in this dataset ranges from 1950 to 2015.
+### unemployment has 816 observations and 3 variables, which are year, month, and unemployment. The year variable in this dataset ranges from 1948 to 2015.
+### The merged dataset Merge 822 observations and 11 varibles. The year variable in this dataset ranges from 1947 to 2015.
 
 ## Problem 2
 
@@ -90,3 +127,73 @@ combine_data = bind_rows(mr_trash_wheel, professor_trash_wheel, gwynnda)
 combine_data
 ```
 #### There are 845 observations and 15 variables in the dataset.
+
+## Problem 3
+```{r}
+baseline_demo_mci = read_csv("./data_mci/MCI_baseline.csv", skip = 1) |> 
+   janitor::clean_names() |>
+   mutate(sex = case_match(sex, 0 ~ "Female", 1 ~ "Male"), 
+          apoe4 = case_match(apoe4, 0 ~ "APOE4 non-carrier", 1 ~ "APOE4 carrier"),
+          age_at_onset = as.numeric(age_at_onset)
+          ) 
+baseline_demo_mci
+```
+
+#### Important steps in the import process
+#### import the csv data of baseline demographic data and skip the first row of description
+#### use janitor function to rename the variables
+#### use mutate function to convert sex and apoe4 to factor variables and age_at_onset to numeric variable.
+
+```{r}
+
+baseline_mci= baseline_demo_mci |> 
+  filter(age_at_onset - current_age > 0 | is.na(age_at_onset))
+baseline_mci
+
+baseline_mci_filter= baseline_demo_mci |> 
+  filter(age_at_onset - current_age > 0) 
+baseline_mci_filter
+dim(baseline_mci_filter)
+mean(pull(baseline_mci, current_age))
+
+filter(baseline_demo_mci, sex == "Female" & apoe4 == "APOE4 carrier")
+filter(baseline_demo_mci, sex == "Female")
+```
+
+#### After removing any participants who do not meet the stated inclusion criteria, there are 483 participants recruited in the study. 93 participants developed MCI. There are 211 female in the dataset and 63 of them are  APOE4 carrier. Therefore, 63/211*100%=29.86%. Therefore, 29.8% of female are APOE4 carriers.
+
+```{r}
+mci_amyloid = 
+  read_csv("./data_mci/mci_amyloid.csv", skip = 1) |>
+  janitor::clean_names() |>
+  rename(id = study_id)
+  mci_amyloid
+```
+#### Important steps in the import process
+#### skipping the first row of description 
+#### There are 487 observations and 6 varibles in the dataset with some missing values
+
+```{r}
+baseline_mci_only = anti_join(baseline_mci, mci_amyloid, by = "id")
+
+baseline_mci_only
+```
+#### The participants are only in the baseline dataset
+
+```{r}
+mci_amyloid_only = anti_join(mci_amyloid, baseline_mci, by = "id")
+mci_amyloid_only
+```
+#### The participants are only in the amyloid dataset
+#### Therefore, some participants appear in only the baseline or amyloid dataset.
+
+```{r}
+mci_join = inner_join(baseline_mci, mci_amyloid, by = "id")
+mci_join
+```
+#### The dataset has 471 rows and 11 columns
+
+#### export mci_join as a csv file
+```{r}
+write_csv(mci_join, "./data_mci/mci_join.csv")
+```
