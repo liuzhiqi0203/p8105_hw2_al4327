@@ -139,7 +139,7 @@ baseline_demo_mci = read_csv("./data_mci/MCI_baseline.csv", skip = 1) |>
 baseline_demo_mci
 ```
 
-#### Important steps in the import process
+#### Important steps in the import process:
 #### import the csv data of baseline demographic data and skip the first row of description
 #### use janitor function to rename the variables
 #### use mutate function to convert sex and apoe4 to factor variables and age_at_onset to numeric variable.
@@ -160,7 +160,7 @@ filter(baseline_demo_mci, sex == "Female" & apoe4 == "APOE4 carrier")
 filter(baseline_demo_mci, sex == "Female")
 ```
 
-#### After removing any participants who do not meet the stated inclusion criteria, there are 483 participants recruited in the study. 93 participants developed MCI. There are 211 female in the dataset and 63 of them are  APOE4 carrier. Therefore, 63/211*100%=29.86%. Therefore, 29.8% of female are APOE4 carriers.
+#### After removing any participants who do not meet the stated inclusion criteria, there are 483 participants recruited in the study. 93 participants developed MCI. There are 211 female in the dataset and 63 of them are  APOE4 carriers. Therefore, 63/211*100%=29.86%. Therefore, 29.86% of female are APOE4 carriers.
 
 ```{r}
 mci_amyloid = 
@@ -169,7 +169,7 @@ mci_amyloid =
   rename(id = study_id)
   mci_amyloid
 ```
-#### Important steps in the import process
+#### Important steps in the import process:
 #### skipping the first row of description 
 #### There are 487 observations and 6 varibles in the dataset with some missing values
 
